@@ -13,9 +13,9 @@
 <style>
 :root{
   --bg:#0a0618;--roxo:#8a1cf5;--laranja:#ff8a1a;--amarelo:#ffd51a;
-  --reserva:130px;            /* espaço do topo (logo + placar) fora do tabuleiro */
+  --reserva:142px;            /* espaço do topo (logo + placar) fora do tabuleiro */
 }
-@media (pointer:coarse){:root{--reserva:285px}}  /* celular: soma o espaço dos botões de direção */
+@media (pointer:coarse){:root{--reserva:297px}}  /* celular: soma o espaço dos botões de direção */
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html{overscroll-behavior:none;background:var(--bg)}
 body{
@@ -29,7 +29,7 @@ body.venceu{touch-action:pan-y;overflow-y:auto}
 .app{width:100%;max-width:460px;display:flex;flex-direction:column;align-items:center;gap:10px}
 
 .topo{width:100%;display:flex;flex-direction:column;align-items:center;gap:8px}
-.logo{height:34px;width:auto;display:block}
+.logo{height:46px;width:auto;display:block;border-radius:8px}
 .hud{width:100%;display:flex;justify-content:space-between;gap:6px;
   font-size:clamp(7px,2.3vw,10px);line-height:1.4}
 .hud .fase{color:var(--laranja)}
@@ -105,7 +105,7 @@ body.venceu .topo,body.venceu .palco,body.venceu .dpad{display:none}
 <body>
 <main class="app">
   <header class="topo">
-    <img class="logo" src="logo-branca.png" alt="Fama Educação">
+    <img class="logo" src="logo-original.png" alt="Fama Educação">
     <div class="hud">
       <span class="fase" id="hudFase">FASE 2</span>
       <span id="hudPontos">PONTOS 0</span>
@@ -166,9 +166,10 @@ body.venceu .topo,body.venceu .palco,body.venceu .dpad{display:none}
    (WhatsApp do time, site da Fama, formulário, etc.). */
 const PRIZE_URL = 'https://api.whatsapp.com/send/?phone=556233100000&text=Ol%C3%A1%21+Gostaria+de+saber+mais+sobre+os+cursos+da+Fama.&type=phone_number&app_absent=0';
 
+/* Um labirinto só: comeu todas as bolinhas = tela de parabéns com o QR code.
+   velP = velocidade do Pac-Man · velF = velocidade dos fantasmas. */
 const FASES = [
-  { nome: 'JOGUE E GARANTA SEU PRÊMIO.',   fant: 3, velF: 3.1, velP: 3.8, agress: [0.6, 0.4, 0.25] },
-  { nome: 'ETAPA FINAL, FALTA POUCO.',      fant: 4, velF: 3.6, velP: 4.0, agress: [0.8, 0.6, 0.4, 0.3] }
+  { nome: 'JOGUE E GARANTA SEU PRÊMIO.', fant: 3, velF: 3.2, velP: 3.9, agress: [0.65, 0.45, 0.3] }
 ];
 
 /* # parede · . bolinha · o estrela (poder) · P início do Pac · G casa dos fantasmas · - porta */
@@ -221,7 +222,7 @@ function mostrar(id) {
   if (id) $(id).classList.add('ativa');
 }
 function atualizarHud() {
-  hudFase.textContent = 'FASE 2 · ' + (faseIdx + 1) + '/' + FASES.length;
+  hudFase.textContent = 'FASE 2';
   hudPontos.textContent = 'PONTOS ' + pontos;
   hudVidas.textContent = 'VIDAS ' + vidas;
 }
@@ -321,10 +322,15 @@ function vitoria() {
   const box = $('qrcode');
   box.innerHTML = '';
   const tam = Math.min(200, Math.max(150, window.innerWidth - 120));
-  if (typeof QRCode !== 'undefined') {
-    new QRCode(box, { text: PRIZE_URL, width: tam, height: tam,
-      colorDark: '#000000', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
-  } else {
+  let ok = false;
+  try {
+    if (typeof QRCode !== 'undefined') {
+      new QRCode(box, { text: PRIZE_URL, width: tam, height: tam,
+        colorDark: '#000000', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+      ok = true;
+    }
+  } catch (e) { ok = false; }
+  if (!ok) {
     box.innerHTML = '<p style="color:#000;font-size:9px;line-height:1.6;max-width:160px;word-break:break-all">' +
       'Não foi possível carregar o QR code. Use o botão abaixo.</p>';
   }
