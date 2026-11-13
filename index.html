@@ -13,9 +13,9 @@
 <style>
 :root{
   --bg:#0a0618;--roxo:#8a1cf5;--laranja:#ff8a1a;--amarelo:#ffd51a;
-  --reserva:142px;            /* espaço do topo (logo + placar) fora do tabuleiro */
+  --reserva:134px;            /* espaço do topo (logo + placar) fora do tabuleiro */
 }
-@media (pointer:coarse){:root{--reserva:297px}}  /* celular: soma o espaço dos botões de direção */
+@media (pointer:coarse){:root{--reserva:289px}}  /* celular: soma o espaço dos botões de direção */
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html{overscroll-behavior:none;background:var(--bg)}
 body{
@@ -29,7 +29,7 @@ body.venceu{touch-action:pan-y;overflow-y:auto}
 .app{width:100%;max-width:460px;display:flex;flex-direction:column;align-items:center;gap:10px}
 
 .topo{width:100%;display:flex;flex-direction:column;align-items:center;gap:8px}
-.logo{height:46px;width:auto;display:block;border-radius:8px}
+.logo{height:38px;width:auto;display:block}
 .hud{width:100%;display:flex;justify-content:space-between;gap:6px;
   font-size:clamp(7px,2.3vw,10px);line-height:1.4}
 .hud .fase{color:var(--laranja)}
@@ -81,6 +81,18 @@ canvas{display:block;width:100%;height:100%}
 .dpad .down{grid-column:2;grid-row:3}
 @media (pointer:coarse){.dpad{display:grid}}
 
+/* tela de GAME OVER: substitui o jogo */
+body.perdeu{touch-action:pan-y;overflow-y:auto}
+#gameover{display:none;width:100%;text-align:center;padding:10px 0 4px}
+body.perdeu #gameover{display:block}
+body.perdeu .topo,body.perdeu .palco,body.perdeu .dpad{display:none}
+.go-fantasma{width:84px;height:84px;margin:6px auto 16px;display:block;animation:flutua 2s ease-in-out infinite}
+@keyframes flutua{50%{transform:translateY(-8px)}}
+@media (prefers-reduced-motion:reduce){.go-fantasma{animation:none}}
+#gameover h1{font-size:clamp(24px,9vw,40px);line-height:1.3;font-weight:400;color:var(--laranja);margin-bottom:16px}
+#gameover .go2{font-size:clamp(11px,3.8vw,16px);line-height:1.7;margin-bottom:14px}
+#gameover .go3{font-size:clamp(12px,4.2vw,18px);line-height:1.6;color:var(--amarelo);margin-bottom:6px}
+
 /* tela de vitória: substitui o jogo */
 #vitoria{display:none;width:100%;text-align:center;padding:6px 0 4px}
 body.venceu #vitoria{display:block}
@@ -99,7 +111,7 @@ body.venceu .topo,body.venceu .palco,body.venceu .dpad{display:none}
 .premio em{font-style:normal;color:var(--laranja)}
 #vitoria .fale{font-size:clamp(8px,2.6vw,11px);line-height:1.9;color:#d9c9ff}
 .acoes{display:flex;flex-direction:column;align-items:stretch;gap:12px;margin:18px auto 0;max-width:320px}
-.logo-g{width:min(220px,72%);height:auto;border-radius:14px;margin:22px auto 6px;display:block}
+.logo-g{width:min(200px,64%);height:auto;margin:26px auto 6px;display:block}
 </style>
 </head>
 <body>
@@ -127,11 +139,6 @@ body.venceu .topo,body.venceu .palco,body.venceu .dpad{display:none}
         <h2 id="textoFase"></h2>
       </div>
 
-      <div class="tela" id="telaFim">
-        <h2>Quase lá!</h2>
-        <p>Os fantasmas pegaram você.<br>Tente de novo para garantir o prêmio.</p>
-        <button class="btn" id="btnRecomecar">TENTAR DE NOVO</button>
-      </div>
     </div>
   </section>
 
@@ -141,6 +148,23 @@ body.venceu .topo,body.venceu .palco,body.venceu .dpad{display:none}
     <button class="right" data-d="right" aria-label="Direita">▶</button>
     <button class="down" data-d="down" aria-label="Baixo">▼</button>
   </div>
+
+  <section id="gameover" aria-live="polite">
+    <svg class="go-fantasma" viewBox="0 0 14 14" shape-rendering="crispEdges" role="img" aria-label="Fantasma">
+      <path fill="#8a1cf5" d="M4 1h6v1h2v2h1v9h-2v-1h-1v1h-2v-1H8v1H6v-1H5v1H3v-1H2v1H1V4h1V2h2z"/>
+      <rect x="3" y="5" width="3" height="3" fill="#fff"/><rect x="8" y="5" width="3" height="3" fill="#fff"/>
+      <rect x="4" y="6" width="2" height="2" fill="#1a2cff"/><rect x="9" y="6" width="2" height="2" fill="#1a2cff"/>
+    </svg>
+    <h1>GAME OVER?</h1>
+    <p class="go2">SUA OPORTUNIDADE <span class="laranja">NÃO!</span></p>
+    <p class="go3">DESBLOQUEIE SUA SURPRESA!</p>
+    <div class="acoes">
+      <a class="btn" id="linkVestibular" href="#" target="_blank" rel="noopener">DESBLOQUEAR MINHA SURPRESA</a>
+      <a class="btn sec" id="linkSite" href="#" target="_blank" rel="noopener">CONHECER A FAMA</a>
+      <button class="btn sec" id="btnRecomecar">TENTAR DE NOVO</button>
+    </div>
+    <img class="logo-g" src="logo-branca.png" alt="Fama Educação">
+  </section>
 
   <section id="vitoria" aria-live="polite">
     <h1><span class="laranja">Parabéns,</span> você ganhou!</h1>
@@ -168,6 +192,12 @@ const PRIZE_URL = 'https://api.whatsapp.com/send/?phone=556233100000&text=Ol%C3%
 
 /* Um labirinto só: comeu todas as bolinhas = tela de parabéns com o QR code.
    velP = velocidade do Pac-Man · velF = velocidade dos fantasmas. */
+/* Links do GAME OVER (captação de lead). Os parâmetros utm_ servem para você
+   ver nas estatísticas quantas pessoas vieram do jogo; pode apagá-los se quiser. */
+const UTM = '?utm_source=jogo-pacman&utm_medium=mesa-shopping&utm_campaign=game-over';
+const URL_VESTIBULAR = 'https://vestibular.faculdadefama.edu.br/' + UTM;
+const URL_SITE = 'https://faculdadefama.edu.br/' + UTM;
+
 const FASES = [
   { nome: 'JOGUE E GARANTA SEU PRÊMIO.', fant: 3, velF: 3.2, velP: 3.9, agress: [0.65, 0.45, 0.3] }
 ];
@@ -287,7 +317,7 @@ const passavelF = passavelPac;
 
 /* ---------- fluxo do jogo ---------- */
 function iniciarJogo() {
-  document.body.classList.remove('venceu');
+  document.body.classList.remove('venceu', 'perdeu');
   pontos = 0; vidas = 3; faseIdx = 0;
   carregarFase();
 }
@@ -462,6 +492,8 @@ document.addEventListener('touchmove', e => {
   }
 }, { passive: true });
 
+$('linkVestibular').href = URL_VESTIBULAR;
+$('linkSite').href = URL_SITE;
 $('btnJogar').addEventListener('click', iniciarJogo);
 $('btnRecomecar').addEventListener('click', iniciarJogo);
 $('btnDeNovo').addEventListener('click', iniciarJogo);
@@ -569,7 +601,7 @@ function tick(dt) {
     tEstado -= dt;
     if (tEstado <= 0) {
       if (vidas > 0) { reposicionar(); estado = 'jogando'; }
-      else { estado = 'fim'; mostrar('telaFim'); }
+      else { estado = 'fim'; mostrar(null); document.body.classList.add('perdeu'); window.scrollTo(0, 0); }
     }
     return;
   }
